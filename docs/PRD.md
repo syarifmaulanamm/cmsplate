@@ -7,14 +7,14 @@
 | Item | Nilai |
 |---|---|
 | Nama produk | CMSPlate |
-| Jenis | Boilerplate CMS (internal) |
+| Jenis | Boilerplate CMS (open-source) |
 | Frontend & Backend | Next.js 16.4.3 (App Router) |
 | UI | shadcn/ui + Tailwind CSS 4.3 |
 | Database | PostgreSQL 16+ |
 | ORM | Prisma |
 | Storage v1 | Penyimpanan lokal (adapter S3 disiapkan untuk fase berikutnya) |
 | Deployment | Docker (self-host) |
-| Distribusi | Internal (tidak dipublikasikan sebagai open-source) |
+| Distribusi | Open-source (MIT) |
 
 ---
 
@@ -701,7 +701,7 @@ Total estimasi: ±8 minggu untuk satu developer.
 | D3 | Storage lokal v1 dengan `StorageAdapter` | S3 sejak awal | Mengurangi ketergantungan eksternal di v1; abstraksi menjaga jalur migrasi |
 | D4 | Frontend publik disertakan penuh | Admin + API saja | Boilerplate harus bisa langsung dipakai; template publik menjadi referensi implementasi |
 | D5 | Tiga peran (Super Admin, Editor, Author) | Dua peran atau granular permission | Cukup untuk tim konten kecil tanpa kompleksitas permission matrix |
-| D6 | Lisensi internal, bukan open-source | MIT | Distribusi internal; menghindari kewajiban dokumentasi publik |
+| D6 | Lisensi MIT (open-source) | Lisensi internal | Distribusi publik dengan lisensi permisif; memudahkan adopsi dan kontribusi |
 | D7 | Satu aksen brand (terakota) untuk admin dan publik | Indigo di admin, terakota di publik | Identitas terasa utuh; dapat diganti lewat satu token `--primary` |
 | D8 | Arah visual hangat-minimal, bukan data-dense | Data-dense dashboard (rekomendasi tool) | CMS dipakai harian; kepadatan tinggi melelahkan dan bertentangan dengan tujuan "tidak kaku" |
 | D9 | Tiptap sebagai editor | Lexical, Plate | Ekosistem ekstensi luas, output JSON stabil, dokumentasi baik |

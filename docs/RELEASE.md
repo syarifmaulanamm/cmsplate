@@ -112,7 +112,7 @@ git push -u origin main --tags
 ```
 
 - [ ] Tag `v1.0.0` dibuat dan di-push.
-- [ ] Rilis internal dicatat di changelog.
+- [ ] Rilis dicatat di changelog.
 - [ ] Arsipkan backup database pasca-rilis.
 
 ## 8. Rollback

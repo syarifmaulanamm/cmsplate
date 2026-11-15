@@ -16,7 +16,7 @@
   <img alt="React 19" src="https://img.shields.io/badge/React-19-149ECA?style=flat-square&logo=react&logoColor=white">
   <img alt="Tailwind CSS 4.3" src="https://img.shields.io/badge/Tailwind_CSS-4.3-38BDF8?style=flat-square&logo=tailwindcss&logoColor=white">
   <img alt="PostgreSQL 16" src="https://img.shields.io/badge/PostgreSQL-16-4169E1?style=flat-square&logo=postgresql&logoColor=white">
-  <img alt="Internal license" src="https://img.shields.io/badge/license-internal-6B7280?style=flat-square">
+  <img alt="MIT License" src="https://img.shields.io/badge/license-MIT-22C55E?style=flat-square">
 </p>
 
 > **Status: v1.0.0, production-ready.** Every first-release feature is complete: two languages, blog, categories, media, SEO monitor, first-party analytics, Google integrations, WhatsApp, users, site settings, and production Docker.
@@ -271,4 +271,4 @@ Full details are in [`docs/PRD.md`](docs/PRD.md) and [`docs/PLAN.md`](docs/PLAN.
 
 ## License
 
-Internal. Not for public distribution without approval. See [`LICENSE`](LICENSE).
+MIT License. See [`LICENSE`](LICENSE).
