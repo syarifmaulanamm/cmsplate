@@ -85,9 +85,6 @@
     "typescript": "^5.9.3",
     "vitest": "^5.1.0"
   },
-  "prisma": {
-    "seed": "tsx prisma/seed.ts"
-  },
   "pnpm": {
     "overrides": {
       "deepmerge-ts": ">=8.0.0",
