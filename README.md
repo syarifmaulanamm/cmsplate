@@ -68,7 +68,7 @@ What sets it apart: analytics runs on your own server without third-party cookie
 **Prerequisites:** Node.js ≥ 22, pnpm ≥ 10, and Docker + Docker Compose.
 
 ```bash
-git clone <repo> cmsplate && cd cmsplate
+git clone https://github.com/syarifmaulanamm/cmsplate.git cmsplate && cd cmsplate
 pnpm install
 cp .env.example .env          # adjust the secrets
 docker compose up -d db
