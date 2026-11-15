@@ -1,0 +1,415 @@
+// CMSPlate — Prisma schema
+// PostgreSQL 16+. Satu sumber kebenaran untuk model data (lihat docs/PRD.md Bagian 7).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  SUPER_ADMIN
+  EDITOR
+  AUTHOR
+}
+
+enum PostStatus {
+  DRAFT
+  IN_REVIEW
+  SCHEDULED
+  PUBLISHED
+  ARCHIVED
+}
+
+enum Severity {
+  CRITICAL
+  WARNING
+  INFO
+}
+
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  name         String
+  passwordHash String
+  role         Role      @default(AUTHOR)
+  isActive     Boolean   @default(true)
+  locale       String    @default("id")
+  lastLoginAt  DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  sessions  Session[]
+  posts     Post[]         @relation("PostAuthor")
+  edited    Post[]         @relation("PostEditor")
+  media     Media[]        @relation("MediaUploader")
+  revisions PostRevision[] @relation("RevisionAuthor")
+  auditLogs AuditLog[]
+
+  @@index([role])
+  @@map("users")
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  tokenHash String   @unique
+  userId    String
+  userAgent String?
+  ipHash    String?
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("sessions")
+}
+
+model Post {
+  id              String    @id @default(cuid())
+  authorId        String
+  updatedById     String?
+  categoryId      String
+  featuredImageId String?
+  deletedAt       DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  author        User              @relation("PostAuthor", fields: [authorId], references: [id], onDelete: Restrict)
+  updatedBy     User?             @relation("PostEditor", fields: [updatedById], references: [id], onDelete: SetNull)
+  category      Category          @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  featuredImage Media?            @relation("PostFeaturedImage", fields: [featuredImageId], references: [id], onDelete: SetNull)
+  translations  PostTranslation[]
+  tags          PostTag[]
+  revisions     PostRevision[]
+  schemas       PostSchema[]
+  seoIssues     SeoIssue[]
+
+  @@index([categoryId])
+  @@index([authorId])
+  @@index([deletedAt])
+  @@map("posts")
+}
+
+model PostTranslation {
+  id           String     @id @default(cuid())
+  postId       String
+  locale       String
+  title        String
+  slug         String
+  excerpt      String     @default("")
+  content      Json       @default("{}")
+  contentHtml  String     @default("")
+  contentText  String     @default("")
+  status       PostStatus @default(DRAFT)
+  publishedAt  DateTime?
+  readTime     Int        @default(1)
+  seoScore     Int        @default(0)
+  focusKeyword String?
+  metaTitle    String?
+  metaDescription String?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, locale])
+  @@unique([locale, slug])
+  @@index([locale, status, publishedAt])
+  @@map("post_translations")
+}
+
+model PostRevision {
+  id          String   @id @default(cuid())
+  postId      String
+  title       String
+  content     Json
+  contentHtml String
+  createdById String
+  createdAt   DateTime @default(now())
+
+  post      Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  createdBy User @relation("RevisionAuthor", fields: [createdById], references: [id], onDelete: Restrict)
+
+  @@index([postId, createdAt])
+  @@map("post_revisions")
+}
+
+model Category {
+  id        String   @id @default(cuid())
+  parentId  String?
+  position  Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  parent       Category?             @relation("CategoryTree", fields: [parentId], references: [id], onDelete: Restrict)
+  children     Category[]            @relation("CategoryTree")
+  posts        Post[]
+  translations CategoryTranslation[]
+
+  @@index([parentId])
+  @@map("categories")
+}
+
+model CategoryTranslation {
+  id              String  @id @default(cuid())
+  categoryId      String
+  locale          String
+  name            String
+  slug            String
+  description     String  @default("")
+  metaTitle       String?
+  metaDescription String?
+
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@unique([categoryId, locale])
+  @@unique([locale, slug])
+  @@index([locale])
+  @@map("category_translations")
+}
+
+model Tag {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  createdAt DateTime @default(now())
+
+  posts PostTag[]
+
+  @@map("tags")
+}
+
+model PostTag {
+  postId String
+  tagId  String
+
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  tag  Tag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([postId, tagId])
+  @@map("post_tags")
+}
+
+model Media {
+  id           String   @id @default(cuid())
+  filename     String
+  storageKey   String   @unique
+  mimeType     String
+  size         Int
+  width        Int?
+  height       Int?
+  hash         String   @unique
+  alt          String?
+  caption      String?
+  folder       String   @default("/")
+  uploadedById String
+  createdAt    DateTime @default(now())
+
+  uploadedBy  User            @relation("MediaUploader", fields: [uploadedById], references: [id], onDelete: Restrict)
+  variants    MediaVariant[]
+  featuredIn  Post[]          @relation("PostFeaturedImage")
+  ogImageIn   SeoMeta[]       @relation("SeoOgImage")
+  whatsappFor WhatsappNumber[] @relation("WhatsappAvatar")
+
+  @@index([mimeType])
+  @@index([createdAt])
+  @@map("media")
+}
+
+model MediaVariant {
+  id      String @id @default(cuid())
+  mediaId String
+  label   String
+  path    String
+  width   Int
+  height  Int
+  format  String
+
+  media Media @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+
+  @@unique([mediaId, label])
+  @@map("media_variants")
+}
+
+model SeoMeta {
+  id               String   @id @default(cuid())
+  entityType       String
+  entityId         String
+  metaTitle        String?
+  metaDescription  String?
+  canonicalUrl     String?
+  robotsIndex      Boolean  @default(true)
+  robotsFollow     Boolean  @default(true)
+  focusKeyword     String?
+  ogTitle          String?
+  ogDescription    String?
+  ogImageId        String?
+  ogType           String   @default("article")
+  twitterCard      String   @default("summary_large_image")
+  seoScore         Int      @default(0)
+  updatedAt        DateTime @updatedAt
+
+  ogImage Media? @relation("SeoOgImage", fields: [ogImageId], references: [id], onDelete: SetNull)
+
+  @@unique([entityType, entityId])
+  @@index([entityType])
+  @@map("seo_meta")
+}
+
+model SchemaTemplate {
+  id        String   @id @default(cuid())
+  name      String
+  type      String
+  template  Json
+  isDefault Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  postSchemas PostSchema[]
+
+  @@map("schema_templates")
+}
+
+model PostSchema {
+  id         String   @id @default(cuid())
+  postId     String
+  templateId String?
+  data       Json
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+
+  post     Post            @relation(fields: [postId], references: [id], onDelete: Cascade)
+  template SchemaTemplate? @relation(fields: [templateId], references: [id], onDelete: SetNull)
+
+  @@index([postId])
+  @@map("post_schemas")
+}
+
+model OrganizationSchema {
+  id      String   @id @default(cuid())
+  scope   String   @default("global")
+  scopeId String?
+  data    Json
+  updatedAt DateTime @updatedAt
+
+  @@unique([scope, scopeId])
+  @@map("organization_schemas")
+}
+
+model AnalyticsPageview {
+  id          String   @id @default(cuid())
+  path        String
+  referrer    String?
+  deviceType  String   @default("desktop")
+  country     String?
+  visitorHash String
+  createdAt   DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([path, createdAt])
+  @@index([visitorHash, createdAt])
+  @@map("analytics_pageviews")
+}
+
+model AnalyticsDaily {
+  id       String   @id @default(cuid())
+  date     DateTime @db.Date
+  path     String
+  views    Int      @default(0)
+  visitors Int      @default(0)
+
+  @@unique([date, path])
+  @@index([date])
+  @@map("analytics_daily")
+}
+
+model SeoAudit {
+  id         String   @id @default(cuid())
+  url        String
+  entityType String
+  entityId   String
+  score      Int      @default(0)
+  ranAt      DateTime @default(now())
+
+  issues SeoIssue[]
+
+  @@index([ranAt])
+  @@index([entityType, entityId])
+  @@map("seo_audits")
+}
+
+model SeoIssue {
+  id        String    @id @default(cuid())
+  auditId   String
+  postId    String?
+  severity  Severity
+  rule      String
+  message   String
+  ignoredAt DateTime?
+  createdAt DateTime  @default(now())
+
+  audit SeoAudit @relation(fields: [auditId], references: [id], onDelete: Cascade)
+  post  Post?    @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@index([auditId, severity])
+  @@index([postId])
+  @@map("seo_issues")
+}
+
+model Integration {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     Json
+  isEnabled Boolean  @default(false)
+  updatedAt DateTime @updatedAt
+
+  @@map("integrations")
+}
+
+model WhatsappNumber {
+  id             String   @id @default(cuid())
+  label          String
+  phone          String
+  agentName      String
+  avatarMediaId  String?
+  defaultMessage String   @default("")
+  isActive       Boolean  @default(true)
+  schedule       Json?
+  weight         Int      @default(1)
+  position       Int      @default(0)
+  createdAt      DateTime @default(now())
+
+  avatar Media? @relation("WhatsappAvatar", fields: [avatarMediaId], references: [id], onDelete: SetNull)
+
+  @@index([isActive, position])
+  @@map("whatsapp_numbers")
+}
+
+model Setting {
+  key       String   @id
+  value     Json
+  updatedAt DateTime @updatedAt
+
+  @@map("settings")
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorId    String?
+  action     String
+  entityType String
+  entityId   String?
+  before     Json?
+  after      Json?
+  createdAt  DateTime @default(now())
+
+  actor User? @relation(fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([entityType, entityId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}

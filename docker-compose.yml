@@ -1,0 +1,50 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: cmsplate-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: simplecms
+      POSTGRES_PASSWORD: simplecms
+      POSTGRES_DB: simplecms
+    ports:
+      - "5432:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U simplecms -d simplecms"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build:
+      context: .
+      target: runner
+    container_name: cmsplate-app
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql://simplecms:simplecms@db:5432/simplecms?schema=public
+      UPLOAD_DIR: /data/uploads
+      NODE_ENV: production
+      ADMIN_PATH: ${ADMIN_PATH:-admin}
+    ports:
+      - "3000:3000"
+    volumes:
+      - uploads:/data/uploads
+    command: sh -c "pnpm prisma migrate deploy && pnpm start"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3000/api/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+volumes:
+  db-data:
+  uploads:
