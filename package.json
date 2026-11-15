@@ -88,6 +88,10 @@
     "seed": "tsx prisma/seed.ts"
   },
   "pnpm": {
+    "overrides": {
+      "deepmerge-ts": ">=8.0.0",
+      "minimatch": ">=11.0.1"
+    },
     "onlyBuiltDependencies": [
       "@prisma/client",
       "@prisma/engines",
