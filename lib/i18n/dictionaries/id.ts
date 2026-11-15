@@ -44,9 +44,9 @@ export const id = {
     },
     home: {
       eyebrow: "Next.js 16.4.3 · Tailwind 4.3 · PostgreSQL",
-      title: "Fondasi CMS yang tenang, cepat, dan siap dikembangkan.",
+      title: "Fondasi CMS yang rapi, cepat, dan siap dikembangkan.",
       intro:
-        "CMSPlate menggabungkan penulisan yang nyaman dengan kontrol SEO yang jelas. Kelola artikel dua bahasa, media, analytics, dan audit SEO dari satu panel yang tenang.",
+        "CMSPlate menggabungkan penulisan yang nyaman dengan kontrol SEO yang jelas. Kelola artikel dua bahasa, media, analytics, dan audit SEO dari satu panel yang rapi.",
       ctaPrimary: "Masuk ke dashboard",
       ctaSecondary: "Halaman login",
       highlights: {

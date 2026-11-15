@@ -46,9 +46,9 @@ export const en: Dictionary = {
     },
     home: {
       eyebrow: "Next.js 16.4.3 · Tailwind 4.3 · PostgreSQL",
-      title: "A calm, fast CMS foundation, ready to grow.",
+      title: "A clean, fast CMS foundation, ready to grow.",
       intro:
-        "CMSPlate pairs comfortable writing with clear SEO control. Manage bilingual articles, media, analytics, and SEO audits from one calm panel.",
+        "CMSPlate pairs comfortable writing with clear SEO control. Manage bilingual articles, media, analytics, and SEO audits from one clean panel.",
       ctaPrimary: "Open dashboard",
       ctaSecondary: "Login page",
       highlights: {
